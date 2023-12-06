@@ -10,7 +10,7 @@ open System.Reflection
 [<assembly: System.Reflection.AssemblyCompanyAttribute("AOC2023")>]
 [<assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")>]
 [<assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")>]
-[<assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")>]
+[<assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ffa7e9e9ac75ee7361e69b6763168ef535abad9")>]
 [<assembly: System.Reflection.AssemblyProductAttribute("AOC2023")>]
 [<assembly: System.Reflection.AssemblyTitleAttribute("AOC2023")>]
 [<assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")>]

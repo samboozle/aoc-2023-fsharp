@@ -27,3 +27,4 @@
 /Users/samboozle/Projects/aoc/aoc-2023/aoc_fsharp/AOC2023/obj/Debug/net8.0/AOC2023.pdb
 /Users/samboozle/Projects/aoc/aoc-2023/aoc_fsharp/AOC2023/obj/Debug/net8.0/AOC2023.genruntimeconfig.cache
 /Users/samboozle/Projects/aoc/aoc-2023/aoc_fsharp/AOC2023/obj/Debug/net8.0/ref/AOC2023.dll
+/Users/samboozle/Projects/aoc/aoc-2023/aoc_fsharp/AOC2023/obj/Debug/net8.0/AOC2023.sourcelink.json

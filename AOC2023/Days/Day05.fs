@@ -16,7 +16,10 @@ let (|ToCoords|) (lines: list<string>) =
         |> List.sortBy (fun (_, x, _) -> x)
     )
 
-let parse path : list<int64> * Map<string, list<(int64 * int64 * int64)>> =
+type parsedMaps = (int64 * int64 * int64) list list
+type parsedPath = int64 list * parsedMaps
+
+let parse path : parsedPath =
     let data = IO.File.ReadAllText path
 
     match split "\n\n" data with
@@ -24,76 +27,63 @@ let parse path : list<int64> * Map<string, list<(int64 * int64 * int64)>> =
         let seeds' = split " " seeds[seeds.IndexOf(":") + 2 ..] |> List.map int64
 
         let maps' =
-            List.fold
-                (fun acc (m: string) ->
+            List.map
+                (fun (m: string) ->
                     match split "\n" m with
-                    | key :: (ToCoords coords) -> Map.add key coords acc
+                    | _ :: (ToCoords coords) -> coords
                     | _ -> failwith "invalid map format")
-                Map.empty
                 maps
 
         (seeds', maps')
 
     | _ -> failwith "invalid data format"
 
-let keyChain =
-    [ "seed-to-soil map:"
-      "soil-to-fertilizer map:"
-      "fertilizer-to-water map:"
-      "water-to-light map:"
-      "light-to-temperature map:"
-      "temperature-to-humidity map:"
-      "humidity-to-location map:" ]
-
-let followMaps keys maps seed =
+let followMaps maps seed =
     List.fold
-        (fun v k ->
-            Map.find k maps
-            |> List.tryFind (fun (_, src, range) -> v >= src && v < src + range)
+        (fun v map ->
+            List.tryFind (fun (_, src, range) -> v >= src && v < src + range) map
             |> Option.map (fun (dest, src, _) -> dest + v - src)
             |> Option.defaultValue v)
         seed
-        keys
+        maps
 
-let rec iterateRanges acc (lo, hi) =
+let inline (>==<) x (lo, hi) = x >= lo && x <= hi
+
+let (|Left|Right|Contains|Contained|Below|Above|) ((lo, hi), (lo', hi'), diff) =
+    match lo >==< (lo', hi'), hi >==< (lo', hi') with
+    | false, false when lo' > hi -> Below
+    | false, false when hi' < lo -> Above
+    | false, false -> Contains((lo, lo' - 1L), (lo' + diff, hi' + diff), (hi' + 1L, hi))
+    | true, true -> Contained(lo + diff, hi + diff)
+    | false, true -> Left((lo, hi' - 1L), (lo + diff, hi' + diff))
+    | true, false -> Right((lo + diff, hi' + diff), (hi' + 1L, hi))
+
+let rec iterateRanges acc seed =
     function
-    | [] -> (lo, hi) :: acc
+    | [] -> seed :: acc
     | (dest, src, range) :: coords ->
-        let diff = dest - src
-        let hi' = src + range - 1L
+        match seed, (src, src + range - 1L), dest - src with
+        | Below -> seed :: acc
+        | Above -> iterateRanges acc seed coords
+        | Contains(a, b, seed') -> iterateRanges (a :: b :: acc) seed' coords
+        | Left(a, b) -> a :: b :: acc
+        | Right(a, seed') -> iterateRanges (a :: acc) seed' coords
+        | Contained seed' -> seed' :: acc
 
-        let insideL = lo >= src && lo <= hi' // input range start is within src range
-        let insideR = hi <= hi' && hi >= src // input range end is within src range
-
-        match insideL, insideR with
-        // let [ ] represent the input range and ( ) represent the source range
-        // input range is below source range -> [ ] ( )
-        | false, false when src > hi -> (lo, hi) :: acc
-        // input range is above source range -> ( ) [ ]
-        | false, false when hi' < lo -> iterateRanges acc (lo, hi) coords
-        // input range encompases source range -> [ ( ) ]
-        | false, false -> iterateRanges ((lo, src - 1L) :: (src + diff, hi' + diff) :: acc) (hi' + 1L, hi) coords
-        // input range overlaps left side of source range -> [ ( ] )
-        | false, true -> (lo, hi' - 1L) :: (src + diff, hi' + diff) :: acc
-        // input range overlaps right side of source range -> ( [ ) ]
-        | true, false -> iterateRanges ((lo + diff, hi' + diff) :: acc) (hi' + 1L, hi) coords
-        // input range is encompassed by source range ( [ ] )
-        | true, true -> (lo + diff, hi + diff) :: acc
-
-let rec followMaps' (keys: string list) (maps: Map<string, (int64 * int64 * int64) list>) (seed: int64 * int64) =
-    match keys with
+let rec followMaps' (maps: parsedMaps) (seed: int64 * int64) =
+    match maps with
     | [] -> [ fst seed ]
-    | k :: ks -> Map.find k maps |> iterateRanges [] seed |> List.collect (followMaps' ks maps)
+    | m :: ms -> iterateRanges [] seed m |> List.collect (followMaps' ms)
 
-let partOne ((seeds, maps): list<int64> * Map<string, list<(int64 * int64 * int64)>>) : int64 =
-    List.map (followMaps keyChain maps) seeds |> List.min
+let partOne ((seeds, maps): parsedPath) : int64 =
+    List.map (followMaps maps) seeds |> List.min
 
-let partTwo ((seeds, maps): list<int64> * Map<string, list<(int64 * int64 * int64)>>) : int64 =
+let partTwo ((seeds, maps): parsedPath) : int64 =
     List.chunkBySize 2 seeds
     |> List.choose (function
         | [ seed; len ] -> Some(seed, seed + len - 1L)
         | _ -> None)
-    |> List.collect (followMaps' keyChain maps)
+    |> List.collect (followMaps' maps)
     |> List.min
 
 let run path =
