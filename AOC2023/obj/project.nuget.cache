@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "MRmqu34f86frjj1b7SHMSkXvWyLxdUJDYFQbcXio81Qmg9lfq6wQ5+IOSNb9JwnKmDidlKkT22XDD3jmMUQ3og==",
+  "success": true,
+  "projectFilePath": "/Users/samboozle/Projects/aoc/aoc-2023/aoc_fsharp/AOC2023/AOC2023.fsproj",
+  "expectedPackageFiles": [
+    "/Users/samboozle/.nuget/packages/fsharp.core/8.0.100/fsharp.core.8.0.100.nupkg.sha512"
+  ],
+  "logs": []
+}
