@@ -47,10 +47,10 @@ let followMaps maps seed =
         seed
         maps
 
-let inline (>==<) x (lo, hi) = x >= lo && x <= hi
+let inline (>=<=) x (lo, hi) = x >= lo && x <= hi
 
 let (|Left|Right|Contains|Contained|Below|Above|) ((lo, hi), (lo', hi'), diff) =
-    match lo >==< (lo', hi'), hi >==< (lo', hi') with
+    match lo >=<= (lo', hi'), hi >=<= (lo', hi') with
     | false, false when lo' > hi -> Below
     | false, false when hi' < lo -> Above
     | false, false -> Contains((lo, lo' - 1L), (lo' + diff, hi' + diff), (hi' + 1L, hi))
