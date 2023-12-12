@@ -31,7 +31,7 @@ let charToCard =
     | '4' -> Four
     | '3' -> Three
     | '2' -> Two
-    | _ -> failwith "Invalid chard name"
+    | _ -> failwith "Invalid card character"
 
 let charToCard' =
     function
@@ -99,7 +99,7 @@ let parse =
     >> Seq.cast<string>
     >> Seq.map (fun (hand: string) ->
         match hand.Split(" ") with
-        | [| hand'; bid |] -> hand', int bid
+        | [| hand'; bid |] when String.length hand' = 5 -> hand', int bid
         | _ -> failwith "invalid hand format")
 
 let solve charFn handFn =
